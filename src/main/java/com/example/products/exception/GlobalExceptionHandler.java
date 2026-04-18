@@ -35,6 +35,12 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(400, "Bad Request", message, Instant.now());
     }
 
+    @ExceptionHandler(HnbApiException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ErrorResponse handleHnbApi(HnbApiException ex) {
+        return new ErrorResponse(502, "Bad Gateway", ex.getMessage(), Instant.now());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGeneric(Exception ex) {
