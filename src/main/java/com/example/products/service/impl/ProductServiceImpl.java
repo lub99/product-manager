@@ -1,5 +1,6 @@
 package com.example.products.service.impl;
 
+import com.example.products.client.HnbApiClient;
 import com.example.products.domain.Product;
 import com.example.products.dto.request.CreateProductRequest;
 import com.example.products.dto.response.ProductResponse;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -21,6 +23,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final HnbApiClient hnbApiClient;
 
     @Override
     @Transactional
@@ -29,7 +32,8 @@ public class ProductServiceImpl implements ProductService {
             throw new DuplicateProductCodeException(request.code());
         }
         Product product = productMapper.toEntity(request);
-        product.setPriceUsd(BigDecimal.ZERO);
+        BigDecimal rate = hnbApiClient.getUsdRate();
+        product.setPriceUsd(request.priceEur().multiply(rate).setScale(2, RoundingMode.HALF_UP));
         return productMapper.toResponse(productRepository.save(product));
     }
 
