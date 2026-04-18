@@ -2,6 +2,11 @@
 target/
 .mvn/wrapper/maven-wrapper.jar
 
+# IDE
+.idea/
+*.iml
+.vscode/
+
 # Compiled class file
 *.class
 
