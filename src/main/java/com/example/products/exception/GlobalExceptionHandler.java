@@ -2,6 +2,7 @@ package com.example.products.exception;
 
 import com.example.products.dto.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,7 +15,10 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ProductNotFoundException.class)
+    @ExceptionHandler({
+            ProductNotFoundException.class,
+            UserNotFoundException.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleProductNotFound(ProductNotFoundException ex) {
         return new ErrorResponse(404, "Not Found", ex.getMessage(), Instant.now());
@@ -39,6 +43,24 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public ErrorResponse handleHnbApi(HnbApiException ex) {
         return new ErrorResponse(502, "Bad Gateway", ex.getMessage(), Instant.now());
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleEmailAlreadyExists(EmailAlreadyExistsException ex) {
+        return new ErrorResponse(409, "Conflict", ex.getMessage(), Instant.now());
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleInvalidToken(InvalidTokenException ex) {
+        return new ErrorResponse(401, "Unauthorized", ex.getMessage(), Instant.now());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleBadCredentials(BadCredentialsException ex) {
+        return new ErrorResponse(401, "Unauthorized", ex.getMessage(), Instant.now());
     }
 
     @ExceptionHandler(Exception.class)

@@ -16,3 +16,6 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  secret-key: test-secret-key-at-least-32-characters-long
