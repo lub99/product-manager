@@ -54,7 +54,19 @@ docker compose up postgres -d
 docker compose up -d
 ```
 
-### 4. Seed the admin user
+### 4. Run the application
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+On Windows, use `.\mvnw.cmd` where the README shows `./mvnw` (same wrapper; Bash/Git Bash can still use `./mvnw`).
+
+The API is available at: **http://localhost:8080/product-manager**
+
+---
+
+### 5. Seed the admin user
 
 The app has no automatic admin seeding. Connect to the database and run:
 
@@ -69,17 +81,6 @@ VALUES (
 
 > The hash above is the BCrypt-encoded value of `admin123` (cost=10). Change both the email and password for any non-local environment.
 
-### 5. Run the application
-
-```bash
-./mvnw spring-boot:run -Dspring-boot.run.profiles=local
-```
-
-On Windows, use `.\mvnw.cmd` where the README shows `./mvnw` (same wrapper; Bash/Git Bash can still use `./mvnw`).
-
-The API is available at: **http://localhost:8080/product-manager**
-
----
 
 ## Authentication
 
