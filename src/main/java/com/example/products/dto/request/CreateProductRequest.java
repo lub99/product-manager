@@ -28,4 +28,4 @@ public record CreateProductRequest(
         @Schema(description = "Whether the product is currently available", example = "true")
         @NotNull(message = "Availability is required")
         Boolean isAvailable
-) {}
+) { }

@@ -22,4 +22,4 @@ public record ProductResponse(
 
         @Schema(description = "Product availability flag")
         Boolean isAvailable
-) {}
+) { }

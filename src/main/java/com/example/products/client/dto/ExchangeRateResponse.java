@@ -9,4 +9,4 @@ public record ExchangeRateResponse(
         @JsonProperty("kupovni_tecaj") String kupovniTecaj,
         @JsonProperty("srednji_tecaj") String srednjiTecaj,
         @JsonProperty("prodajni_tecaj") String prodajniTecaj
-) {}
+) { }

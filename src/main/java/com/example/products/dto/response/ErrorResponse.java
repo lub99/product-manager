@@ -16,4 +16,4 @@ public record ErrorResponse(
 
         @Schema(description = "UTC timestamp when error occurred")
         Instant timestamp
-) {}
+) { }
