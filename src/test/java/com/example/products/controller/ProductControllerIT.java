@@ -60,7 +60,7 @@ class ProductControllerIT {
         when(hnbApiClient.getUsdRate()).thenReturn(new BigDecimal("1.18"));
 
         ResponseEntity<ProductResponse> response = restTemplate.exchange(
-                "/api/products", HttpMethod.POST,
+                "/api/v1/products", HttpMethod.POST,
                 new HttpEntity<>(validRequest("PROD000001"), authHeaders()),
                 ProductResponse.class);
 
@@ -72,11 +72,11 @@ class ProductControllerIT {
     @Test
     void createProduct_duplicateCode_returns409() {
         when(hnbApiClient.getUsdRate()).thenReturn(new BigDecimal("1.18"));
-        restTemplate.exchange("/api/products", HttpMethod.POST,
+        restTemplate.exchange("/api/v1/products", HttpMethod.POST,
                 new HttpEntity<>(validRequest("PROD000002"), authHeaders()), ProductResponse.class);
 
         ResponseEntity<Void> response = restTemplate.exchange(
-                "/api/products", HttpMethod.POST,
+                "/api/v1/products", HttpMethod.POST,
                 new HttpEntity<>(validRequest("PROD000002"), authHeaders()),
                 Void.class);
 
@@ -88,7 +88,7 @@ class ProductControllerIT {
         CreateProductRequest request = new CreateProductRequest("SHORT", "Widget", new BigDecimal("9.99"), true);
 
         ResponseEntity<Void> response = restTemplate.exchange(
-                "/api/products", HttpMethod.POST,
+                "/api/v1/products", HttpMethod.POST,
                 new HttpEntity<>(request, authHeaders()),
                 Void.class);
 
@@ -99,12 +99,12 @@ class ProductControllerIT {
     void getProductById_returns200() {
         when(hnbApiClient.getUsdRate()).thenReturn(new BigDecimal("1.18"));
         ProductResponse created = restTemplate.exchange(
-                "/api/products", HttpMethod.POST,
+                "/api/v1/products", HttpMethod.POST,
                 new HttpEntity<>(validRequest("PROD000003"), authHeaders()),
                 ProductResponse.class).getBody();
 
         ResponseEntity<ProductResponse> response = restTemplate.exchange(
-                "/api/products/{id}", HttpMethod.GET,
+                "/api/v1/products/{id}", HttpMethod.GET,
                 new HttpEntity<>(null, authHeaders()),
                 ProductResponse.class, created.id());
 
@@ -115,7 +115,7 @@ class ProductControllerIT {
     @Test
     void getProductById_notFound_returns404() {
         ResponseEntity<Void> response = restTemplate.exchange(
-                "/api/products/99999", HttpMethod.GET,
+                "/api/v1/products/99999", HttpMethod.GET,
                 new HttpEntity<>(null, authHeaders()),
                 Void.class);
 
@@ -125,7 +125,7 @@ class ProductControllerIT {
     @Test
     void getAllProducts_returns200() {
         ResponseEntity<ProductResponse[]> response = restTemplate.exchange(
-                "/api/products", HttpMethod.GET,
+                "/api/v1/products", HttpMethod.GET,
                 new HttpEntity<>(null, authHeaders()),
                 ProductResponse[].class);
 
