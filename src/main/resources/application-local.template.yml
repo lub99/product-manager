@@ -19,3 +19,13 @@ server:
 
 jwt:
   secret-key: test-secret-key-at-least-32-characters-long
+
+management:
+  influx:
+    metrics:
+      export:
+        uri: http://localhost:8086
+        org: product-manager-org
+        bucket: product-manager
+        token: product-manager-influx-token
+        step: 30s
