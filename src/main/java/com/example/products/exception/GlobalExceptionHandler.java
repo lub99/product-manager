@@ -2,6 +2,7 @@ package com.example.products.exception;
 
 import com.example.products.dto.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -61,6 +62,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleBadCredentials(BadCredentialsException ex) {
         return new ErrorResponse(401, "Unauthorized", ex.getMessage(), Instant.now());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleAccessDenied(AccessDeniedException ex) {
+        return new ErrorResponse(403, "Forbidden", ex.getMessage(), Instant.now());
     }
 
     @ExceptionHandler(Exception.class)

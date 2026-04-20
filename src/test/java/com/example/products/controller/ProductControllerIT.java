@@ -1,15 +1,18 @@
 package com.example.products.controller;
 
 import com.example.products.client.HnbApiClient;
+import com.example.products.domain.Role;
 import com.example.products.dto.request.CreateProductRequest;
+import com.example.products.dto.request.LoginRequest;
 import com.example.products.dto.request.RegisterRequest;
 import com.example.products.dto.response.AuthResponse;
 import com.example.products.dto.response.ProductResponse;
+import com.example.products.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.HttpEntity;
@@ -41,16 +44,27 @@ class ProductControllerIT {
     @Autowired
     TestRestTemplate restTemplate;
 
-    @MockBean
+    @Autowired
+    UserRepository userRepository;
+
+    @Mock
     HnbApiClient hnbApiClient;
 
     private String accessToken;
 
     @BeforeEach
     void setUp() {
-        AuthResponse auth = restTemplate.postForEntity(
+        restTemplate.postForEntity(
                 "/auth/register",
                 new RegisterRequest("admin@example.com", "password123"),
+                AuthResponse.class);
+        userRepository.findByEmail("admin@example.com").ifPresent(user -> {
+            user.setRole(Role.ADMIN);
+            userRepository.save(user);
+        });
+        AuthResponse auth = restTemplate.postForEntity(
+                "/auth/login",
+                new LoginRequest("admin@example.com", "password123"),
                 AuthResponse.class).getBody();
         accessToken = auth.accessToken();
     }
