@@ -158,7 +158,7 @@ class AuthControllerIT {
     @Test
     void products_withoutToken_returns401() {
         ResponseEntity<Void> response = restTemplate.getForEntity(
-                "/api/products", Void.class);
+                "/api/v1/products", Void.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
@@ -175,7 +175,7 @@ class AuthControllerIT {
         HttpEntity<Void> entity = new HttpEntity<>(null, headers);
 
         ResponseEntity<Object> response = restTemplate.exchange(
-                "/api/products", HttpMethod.GET, entity, Object.class);
+                "/api/v1/products", HttpMethod.GET, entity, Object.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
