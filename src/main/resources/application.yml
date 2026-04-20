@@ -19,3 +19,14 @@ server:
 jwt:
   access-token-expiration: 900
   refresh-token-expiration: 604800
+
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    tags:
+      application: ${spring.application.name}

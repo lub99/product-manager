@@ -14,7 +14,8 @@ import com.example.products.exception.InvalidTokenException;
 import com.example.products.exception.UserNotFoundException;
 import com.example.products.repository.RefreshTokenRepository;
 import com.example.products.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,7 +27,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -35,36 +35,72 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
+    private final Counter loginSuccess;
+    private final Counter loginFailure;
+    private final Counter registerSuccess;
+    private final Counter registerFailure;
+
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
 
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
+    public AuthServiceImpl(UserRepository userRepository,
+                           RefreshTokenRepository refreshTokenRepository,
+                           JwtService jwtService,
+                           AuthenticationManager authenticationManager,
+                           PasswordEncoder passwordEncoder,
+                           MeterRegistry meterRegistry) {
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.loginSuccess = Counter.builder("auth.login").tag("result", "success").register(meterRegistry);
+        this.loginFailure = Counter.builder("auth.login").tag("result", "failure").register(meterRegistry);
+        this.registerSuccess = Counter.builder("auth.register").tag("result", "success").register(meterRegistry);
+        this.registerFailure = Counter.builder("auth.register").tag("result", "failure").register(meterRegistry);
+    }
+
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyExistsException(request.email());
+        try {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new EmailAlreadyExistsException(request.email());
+            }
+            User user = User.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .role(Role.USER)
+                .build();
+            userRepository.save(user);
+            AuthResponse response = buildAuthResponse(user);
+            registerSuccess.increment();
+            return response;
+        } catch (RuntimeException e) {
+            registerFailure.increment();
+            throw e;
         }
-        User user = User.builder()
-            .email(request.email())
-            .password(passwordEncoder.encode(request.password()))
-            .role(Role.USER)
-            .build();
-        userRepository.save(user);
-        return buildAuthResponse(user);
     }
 
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
-        User user = userRepository.findByEmail(request.email())
-            .orElseThrow(() -> new UserNotFoundException(request.email()));
-        return buildAuthResponse(user);
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.email(), request.password())
+            );
+            User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UserNotFoundException(request.email()));
+            AuthResponse response = buildAuthResponse(user);
+            loginSuccess.increment();
+            return response;
+        } catch (RuntimeException e) {
+            loginFailure.increment();
+            throw e;
+        }
     }
 
     @Override

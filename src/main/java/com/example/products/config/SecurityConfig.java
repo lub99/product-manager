@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import com.example.products.security.filter.AuthRateLimitFilter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -24,7 +25,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           JwtDecoder jwtDecoder,
+                                           MeterRegistry meterRegistry) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/register", "/auth/login").permitAll()
@@ -40,7 +43,7 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .csrf(AbstractHttpConfigurer::disable)
-            .addFilterBefore(new AuthRateLimitFilter(), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new AuthRateLimitFilter(meterRegistry), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
