@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb2:8086
+    jsonData:
+      version: Flux
+      organization: product-manager-org
+      defaultBucket: product-manager
+      tlsSkipVerify: false
+    secureJsonData:
+      token: product-manager-influx-token
+    editable: true

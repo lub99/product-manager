@@ -10,5 +10,40 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  influxdb2:
+    image: influxdb:2
+    container_name: influxdb2
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+      DOCKER_INFLUXDB_INIT_ORG: product-manager-org
+      DOCKER_INFLUXDB_INIT_BUCKET: product-manager
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: product-manager-influx-token
+    volumes:
+      - influxdb2-data:/var/lib/influxdb2
+      - influxdb2-config:/etc/influxdb2
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: grafanapassword
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - influxdb2
+
 volumes:
   pgdata:
+  influxdb2-data:
+  influxdb2-config:
+  grafana-data:

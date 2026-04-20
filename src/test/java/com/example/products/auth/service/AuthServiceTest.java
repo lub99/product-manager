@@ -12,10 +12,10 @@ import com.example.products.exception.EmailAlreadyExistsException;
 import com.example.products.exception.InvalidTokenException;
 import com.example.products.repository.RefreshTokenRepository;
 import com.example.products.repository.UserRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -52,11 +52,13 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
     private AuthServiceImpl authService;
 
     @BeforeEach
     void setUp() {
+        authService = new AuthServiceImpl(
+                userRepository, refreshTokenRepository, jwtService,
+                authenticationManager, passwordEncoder, new SimpleMeterRegistry());
         ReflectionTestUtils.setField(authService, "accessTokenExpiration", 900L);
         ReflectionTestUtils.setField(authService, "refreshTokenExpiration", 604800L);
     }
