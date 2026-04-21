@@ -17,6 +17,7 @@ A REST API for managing products, built with Spring Boot 3.
 ## Prerequisites
 
 - Java 21+
+- JAVA_HOME environment variable must be set to Java 21+.
 - Docker & Docker Compose
 - *(No system Maven needed — Maven Wrapper is included)*
 
@@ -62,6 +63,17 @@ docker compose up -d
 
 On Windows, use `.\mvnw.cmd` where the README shows `./mvnw` (same wrapper; Bash/Git Bash can still use `./mvnw`).
 
+JAVA_HOME environment variable must be set to Java 21+.
+
+If you receive this error:
+```
+-bash: ./mvnw: /bin/sh^M: bad interpreter: No such file or directory
+```
+you must run this command on Linux:
+```bash
+sed -i 's/\r$//' mvnw
+```
+
 The API is available at: **http://localhost:8080/product-manager**
 
 ---
@@ -74,12 +86,12 @@ The app has no automatic admin seeding. Connect to the database and run:
 INSERT INTO users (email, password, role)
 VALUES (
   'admin@example.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2a$12$EZxXjCeLlnLbPqj2DTWMIeQiUQvdNMbhIIiPgzeNYACU4Ku92VJRy',
   'ADMIN'
 );
 ```
 
-> The hash above is the BCrypt-encoded value of `admin123` (cost=10). Change both the email and password for any non-local environment.
+> The hash above is the BCrypt-encoded value of `admin123` (cost=12). Change both the email and password for any non-local environment.
 
 
 ## Authentication
