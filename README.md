@@ -144,20 +144,58 @@ Authorization: Bearer <accessToken>
 
 ## API Endpoints
 
+The app uses context path **`/product-manager`**, so a full URL looks like `http://localhost:8080/product-manager/api/v1/products`.
+
 | Method | URL | Role required | Description |
 |--------|-----|---------------|-------------|
-| POST | `/auth/register` | public | Register a new user |
-| POST | `/auth/login` | public | Login and get tokens |
-| POST | `/auth/refresh` | public | Refresh access token |
-| POST | `/auth/logout` | public | Revoke refresh token |
-| POST | `/product-manager/api/products` | ADMIN | Create a product |
-| GET | `/product-manager/api/products/{id}` | authenticated | Get product by ID |
-| GET | `/product-manager/api/products` | authenticated | List all products |
+| POST | `/product-manager/auth/register` | public | Register a new user |
+| POST | `/product-manager/auth/login` | public | Login and get tokens |
+| POST | `/product-manager/auth/refresh` | public | Refresh access token |
+| POST | `/product-manager/auth/logout` | public | Revoke refresh token |
+| POST | `/product-manager/api/v1/products` | ADMIN | Create a product |
+| GET | `/product-manager/api/v1/products/{id}` | authenticated | Get product by ID |
+| POST | `/product-manager/api/v1/products/paginated` | authenticated | Search / list products (paginated, optional filters in body) |
 
-## Example Request
+### List products (pagination and filters)
+
+Listing uses **POST** `.../api/v1/products/paginated` so filter criteria can be sent as JSON. **Paging and sorting** use Spring Data **`Pageable`** query parameters on the same request (`page`, `size`, `sort`).
+
+- **`page`** — zero-based page index (default from Spring Data if omitted).
+- **`size`** — page size.
+- **`sort`** — e.g. `sort=name,asc` or repeated `sort` parameters for multiple fields.
+
+**Request body:** optional JSON object matching `ProductFilter`. Omit the body or send `{}` to apply no filters. All filter fields are optional; price bounds support **open intervals** (omit `from` and/or `to`).
+
+| JSON field | Meaning |
+|------------|---------|
+| `priceEurFrom` / `priceEurTo` | Inclusive EUR bounds; omit either side for an open interval |
+| `priceUsdFrom` / `priceUsdTo` | Inclusive USD bounds; omit either side for an open interval |
+| `code` | Case-insensitive substring match on product code (SQL `LIKE`) |
+| `name` | Case-insensitive substring match on product name (SQL `LIKE`) |
+| `isAvailable` | `true` / `false`; omit to ignore availability |
+
+**Response:** a Spring Data **`Page`** JSON object (`content`, `totalElements`, `number`, `size`, etc.) whose `content` entries are `ProductResponse` objects.
+
+Example:
 
 ```http
-POST /product-manager/api/products
+POST /product-manager/api/v1/products/paginated?page=0&size=20&sort=code,asc
+Content-Type: application/json
+Authorization: Bearer <accessToken>
+
+{
+  "priceEurFrom": 5.00,
+  "priceEurTo": 100.00,
+  "code": "PROD",
+  "name": "widget",
+  "isAvailable": true
+}
+```
+
+## Example Request (create product)
+
+```http
+POST /product-manager/api/v1/products
 Content-Type: application/json
 Authorization: Bearer <accessToken>
 
