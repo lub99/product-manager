@@ -3,6 +3,7 @@ package com.example.products.service;
 import com.example.products.client.HnbApiClient;
 import com.example.products.domain.Product;
 import com.example.products.dto.request.CreateProductRequest;
+import com.example.products.dto.request.ProductFilter;
 import com.example.products.dto.response.ProductResponse;
 import com.example.products.exception.DuplicateProductCodeException;
 import com.example.products.exception.ProductNotFoundException;
@@ -14,6 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,7 +27,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -97,15 +104,17 @@ class ProductServiceTest {
                 product(1L, "PROD000001", new BigDecimal("9.99"), new BigDecimal("11.79")),
                 product(2L, "PROD000002", new BigDecimal("5.00"), new BigDecimal("5.90"))
         );
-        List<ProductResponse> responses = List.of(
-                response(1L, "PROD000001", new BigDecimal("9.99"), new BigDecimal("11.79")),
-                response(2L, "PROD000002", new BigDecimal("5.00"), new BigDecimal("5.90"))
-        );
+        ProductResponse r1 = response(1L, "PROD000001", new BigDecimal("9.99"), new BigDecimal("11.79"));
+        ProductResponse r2 = response(2L, "PROD000002", new BigDecimal("5.00"), new BigDecimal("5.90"));
 
-        when(productRepository.findAll()).thenReturn(entities);
-        when(productMapper.toResponseList(entities)).thenReturn(responses);
+        var pageable = PageRequest.of(0, 20);
+        ProductFilter filter = ProductFilter.empty();
+        when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(entities, pageable, 2));
+        when(productMapper.toResponse(entities.get(0))).thenReturn(r1);
+        when(productMapper.toResponse(entities.get(1))).thenReturn(r2);
 
-        assertThat(productService.getAllProducts()).hasSize(2);
+        assertThat(productService.getAllProducts(filter, pageable).getContent()).hasSize(2);
     }
 
     private Product product(Long id, String code, BigDecimal priceEur, BigDecimal priceUsd) {

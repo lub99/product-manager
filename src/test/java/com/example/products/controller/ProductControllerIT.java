@@ -19,6 +19,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -27,6 +28,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -138,13 +140,18 @@ class ProductControllerIT {
 
     @Test
     void getAllProducts_returns200() {
-        ResponseEntity<ProductResponse[]> response = restTemplate.exchange(
-                "/api/v1/products", HttpMethod.GET,
-                new HttpEntity<>(null, authHeaders()),
-                ProductResponse[].class);
+        HttpHeaders headers = authHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                "/api/v1/products/paginated?page=0&size=20",
+                HttpMethod.POST,
+                new HttpEntity<>("{}", headers),
+                Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).containsKeys("content", "totalElements", "number", "size");
     }
 
     private HttpHeaders authHeaders() {
