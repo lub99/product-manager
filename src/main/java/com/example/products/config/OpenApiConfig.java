@@ -26,7 +26,8 @@ public class OpenApiConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("Paste the access token from POST /auth/register or POST /auth/login")))
+                                        .description(
+                                                "Paste the access token from POST /auth/register or POST /auth/login")))
                 .addSecurityItem(new SecurityRequirement().addList(BEARER_JWT_SCHEME));
     }
 }
